@@ -1,8 +1,7 @@
 {
   "name": "placeholders",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,8 +10,14 @@
   "license": "ISC",
   "packageManager": "pnpm@10.15.0",
   "devDependencies": {
+    "@types/node": "^24.6.2",
     "eslint": "^9.37.0",
     "neostandard": "^0.12.2",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.5",
+    "dotenv": "^17.2.3",
+    "hono": "^4.9.9"
   }
 }
