@@ -4,7 +4,7 @@ import devServer from "@hono/vite-dev-server";
 export default defineConfig({
   plugins: [
     devServer({
-      entry: "./src/server.ts",
+      entry: "./src/app.ts",
     }),
   ],
   build: {
@@ -12,9 +12,9 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     rollupOptions: {
-      input: "./src/server.ts",
+      input: "./src/app.ts",
       output: {
-        entryFileNames: "server.js",
+        entryFileNames: "app.js",
       },
     },
   },

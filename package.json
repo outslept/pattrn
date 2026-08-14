@@ -13,7 +13,8 @@
   "dependencies": {
     "@hono/node-server": "^2.1.1",
     "dotenv": "^17.4.2",
-    "hono": "^4.13.2"
+    "hono": "^4.13.2",
+    "vercel": "^58.11.0"
   },
   "devDependencies": {
     "@hono/vite-dev-server": "^0.26.1",
