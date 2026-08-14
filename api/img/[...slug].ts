@@ -8,7 +8,6 @@ import {
 } from '../_lib.js'
 
 const VALID_PATTERNS = new Set<string>(['none', 'dots', 'stripes', 'grid', 'checkers', 'noise'])
-const IS_DEV = process.env.NODE_ENV === 'development' || process.env.ENVIRONMENT === 'DEV'
 
 const text = (message: string, status: number) => new Response(message, {
   status,
@@ -87,7 +86,7 @@ export default (request: Request): Response => {
   return new Response(svg, {
     headers: {
       'Content-Type': 'image/svg+xml; charset=utf-8',
-      'Cache-Control': IS_DEV ? 'no-cache' : 'public, max-age=86400'
+      'Cache-Control': 'public, max-age=86400'
     }
   })
 }
