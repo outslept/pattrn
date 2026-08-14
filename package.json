@@ -12,18 +12,11 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"
   },
-  "dependencies": {
-    "@hono/node-server": "^2.1.1",
-    "dotenv": "^17.4.2",
-    "hono": "^4.13.2"
-  },
   "devDependencies": {
     "@types/node": "^26.2.0",
     "oxfmt": "^0.63.0",
     "oxlint": "^1.78.0",
-    "tsdown": "^0.22.14",
-    "typescript": "^5.9.3",
-    "unrun": "^0.3.1"
+    "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@11.21.0"
 }
