@@ -108,8 +108,11 @@ function safeFloat(val: string | undefined, fallback: number, min: number, max: 
 function parseSize(s: string): { width: number; height: number } | null {
   if (!/^\d+(?:x\d+)?$/i.test(s)) return null
   const parts = s.toLowerCase().split('x')
-  const w = parseInt(parts[0], 10)
-  const h = parseInt(parts[1] || parts[0], 10)
+  const rawW = parts[0]
+  if (!rawW) return null
+  const rawH = parts[1] ?? rawW
+  const w = parseInt(rawW, 10)
+  const h = parseInt(rawH, 10)
   if (Number.isNaN(w) || Number.isNaN(h)) return null
   return { width: w, height: h }
 }
