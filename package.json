@@ -1,12 +1,7 @@
 {
-  "name": "placeholders",
-  "version": "1.0.0",
+  "name": "pattrn",
   "type": "module",
   "scripts": {
-    "build": "tsdown",
-    "dev": "tsx watch server.ts",
-    "start": "node dist/server.js",
-    "preview": "node dist/server.js",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
