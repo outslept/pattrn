@@ -123,9 +123,7 @@ function toBool(v: string): boolean {
   return /^(1|true|yes|on)$/i.test(v)
 }
 
-const port = Number(process.env.PORT || 8080)
-serve({ fetch: app.fetch, port }, () => {
-  console.log(`Hono server listening on :${port}`)
-})
+const port = safeInt(process.env.PORT, 8080, 1, 65535)
+serve({ fetch: app.fetch, port })
 
 export default app
