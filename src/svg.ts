@@ -146,3 +146,7 @@ function escapeText(s: string): string {
     }
   })
 }
+
+function escapeAttr(s: string): string {
+  return escapeText(s).replace(/[\n\r]/g, ' ')
+}
