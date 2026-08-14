@@ -11,7 +11,7 @@ app.get('/img/:size', handle)
 app.get('/img/:size/:bg', handle)
 app.get('/img/:size/:bg/:fg', handle)
 
-async function handle (c: Context) {
+async function handle(c: Context) {
   try {
     const { size = '', bg: bgRaw, fg: fgRaw } = c.req.param()
     const dims = parseSize(size)
@@ -79,7 +79,7 @@ async function handle (c: Context) {
   }
 }
 
-function parseSize (s: string): { width: number; height: number } | null {
+function parseSize(s: string): { width: number; height: number } | null {
   if (!/^\d+(?:x\d+)?$/i.test(s)) return null
   const parts = s.toLowerCase().split('x')
   const a = parts[0]
@@ -91,7 +91,7 @@ function parseSize (s: string): { width: number; height: number } | null {
   return { width: w, height: h }
 }
 
-function parsePattern (s: string): Pattern | null {
+function parsePattern(s: string): Pattern | null {
   switch (s) {
     case 'none':
     case 'dots':
@@ -114,3 +114,5 @@ const port = Number(process.env.PORT || 8080)
 serve({ fetch: app.fetch, port }, () => {
   console.log(`Hono server listening on :${port}`)
 })
+
+export default app
