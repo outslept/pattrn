@@ -1,11 +1,5 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "typescript",
-    "import"
-  ],
-  "ignorePatterns": [
-    "node_modules/",
-    "dist/"
-  ]
+  "plugins": ["typescript", "import"],
+  "ignorePatterns": ["node_modules/", "dist/"]
 }

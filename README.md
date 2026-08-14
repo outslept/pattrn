@@ -11,11 +11,13 @@
 ## parameters
 
 path:
+
 - size: n or wxh (1..3000)
 - bg: hex (3/6-digit, "#" optional)
 - fg: hex (optional). if missing, auto-contrast is used.
 
 query:
+
 - radius: 0..min(w,h)/2 (default 0)
 - gradient: 1|true|yes|on (default false)
 - pattern: none|dots|stripes|grid|checkers|noise (default none)
