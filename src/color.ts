@@ -2,7 +2,7 @@ const LOOKUP_HEX = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart
 
 export function normalizeHex(input: string): string | null {
   const s = input.trim().replace(/^#/, '').toLowerCase()
-  if (/^[0-9a-f]{3}$/.test(s)) return s[0] + s[0] + s[1] + s[1] + s[2] + s[2]
+  if (/^[0-9a-f]{3}$/.test(s)) return s.replace(/./g, '$&$&')
   if (/^[0-9a-f]{6}$/.test(s)) return s
   return null
 }
