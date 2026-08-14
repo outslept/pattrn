@@ -5,12 +5,11 @@ import { buildSvg, type Pattern } from './svg.js'
 import { normalizeHex } from './color.js'
 
 const app = new Hono()
+const IS_DEV = process.env.NODE_ENV === 'development' || process.env.ENVIRONMENT === 'DEV'
+const VALID_PATTERNS = new Set<string>(['none', 'dots', 'stripes', 'grid', 'checkers', 'noise'])
 
 app.get('/', (c) => c.html('Service ready. Try /img/300x200'))
-
-app.get('/img/:size', handle)
-app.get('/img/:size/:bg', handle)
-app.get('/img/:size/:bg/:fg', handle)
+app.get('/img/:size/:bg?/:fg?', handle)
 
 async function handle(c: Context) {
   try {
@@ -30,16 +29,15 @@ async function handle(c: Context) {
     if (fgRaw && !fg) return c.text('Invalid foreground color', 400)
 
     const maxRadius = Math.floor(Math.min(width, height) / 2)
-    const radius = safeInt(c.req.query('radius'), 0, 0, maxRadius)
+    const radius = parseBoundedNumber(c.req.query('radius'), 0, 0, maxRadius, parseInt)
     const gradient = toBool(c.req.query('gradient') ?? 'false')
 
     const patternName = (c.req.query('pattern') ?? 'none').toLowerCase()
-    const pattern = parsePattern(patternName)
-    if (!pattern) return c.text('Unsupported pattern', 400)
+    if (!VALID_PATTERNS.has(patternName)) return c.text('Unsupported pattern', 400)
 
-    const patternScale = safeInt(c.req.query('patternScale'), 20, 2, 200)
-    const patternAngle = safeFloat(c.req.query('patternAngle'), 45, -360, 360)
-    const patternOpacity = safeFloat(c.req.query('patternOpacity'), 0.15, 0, 1)
+    const patternScale = parseBoundedNumber(c.req.query('patternScale'), 20, 2, 200, parseInt)
+    const patternAngle = parseBoundedNumber(c.req.query('patternAngle'), 45, -360, 360, parseFloat)
+    const patternOpacity = parseBoundedNumber(c.req.query('patternOpacity'), 0.15, 0, 1, parseFloat)
 
     const patternColorParam = (c.req.query('patternColor') ?? 'auto').toLowerCase()
     let patternColor: 'auto' | string = 'auto'
@@ -50,14 +48,9 @@ async function handle(c: Context) {
     }
 
     const textParam = c.req.query('text')
-    let text: string | null = `${width}x${height}`
-    if (textParam === 'none') {
-      text = null
-    } else if (textParam && textParam !== 'auto') {
-      text = textParam
-    }
+    const text = textParam === 'none' ? null : (!textParam || textParam === 'auto') ? `${width}x${height}` : textParam
 
-    const fontSize = safeInt(c.req.query('fontSize'), 24, 6, 400)
+    const fontSize = parseBoundedNumber(c.req.query('fontSize'), 24, 6, 400, parseInt)
     const fontWeight = c.req.query('fontWeight') ?? 'bold'
     const fontFamily = c.req.query('font') ?? 'Arial, Helvetica, sans-serif'
     const shadow = toBool(c.req.query('shadow') ?? 'true')
@@ -69,7 +62,7 @@ async function handle(c: Context) {
       foreground: fg,
       radius,
       gradient,
-      pattern,
+      pattern: patternName as Pattern,
       patternScale,
       patternAngle,
       patternColor,
@@ -81,9 +74,8 @@ async function handle(c: Context) {
       shadow,
     })
 
-    const isDev = process.env.NODE_ENV === 'development' || process.env.ENVIRONMENT === 'DEV'
     c.header('Content-Type', 'image/svg+xml; charset=utf-8')
-    c.header('Cache-Control', isDev ? 'no-cache' : 'public, max-age=86400')
+    c.header('Cache-Control', IS_DEV ? 'no-cache' : 'public, max-age=86400')
     return c.body(svg)
   } catch (err) {
     console.error(err)
@@ -91,16 +83,15 @@ async function handle(c: Context) {
   }
 }
 
-function safeInt(val: string | undefined, fallback: number, min: number, max: number): number {
+function parseBoundedNumber(
+  val: string | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+  parser: (s: string, radix?: number) => number
+): number {
   if (!val) return fallback
-  const parsed = parseInt(val, 10)
-  if (Number.isNaN(parsed)) return fallback
-  return Math.min(Math.max(parsed, min), max)
-}
-
-function safeFloat(val: string | undefined, fallback: number, min: number, max: number): number {
-  if (!val) return fallback
-  const parsed = parseFloat(val)
+  const parsed = parser(val, 10)
   if (Number.isNaN(parsed)) return fallback
   return Math.min(Math.max(parsed, min), max)
 }
@@ -110,23 +101,17 @@ function parseSize(s: string): { width: number; height: number } | null {
   const parts = s.toLowerCase().split('x')
   const rawW = parts[0]
   if (!rawW) return null
-  const rawH = parts[1] ?? rawW
   const w = parseInt(rawW, 10)
-  const h = parseInt(rawH, 10)
+  const h = parseInt(parts[1] ?? rawW, 10)
   if (Number.isNaN(w) || Number.isNaN(h)) return null
   return { width: w, height: h }
-}
-
-function parsePattern(s: string): Pattern | null {
-  const validPatterns: Pattern[] = ['none', 'dots', 'stripes', 'grid', 'checkers', 'noise']
-  return validPatterns.includes(s as Pattern) ? (s as Pattern) : null
 }
 
 function toBool(v: string): boolean {
   return /^(1|true|yes|on)$/i.test(v)
 }
 
-const port = safeInt(process.env.PORT, 8080, 1, 65535)
+const port = parseBoundedNumber(process.env.PORT, 8080, 1, 65535, parseInt)
 serve({ fetch: app.fetch, port })
 
 export default app

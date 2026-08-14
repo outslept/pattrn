@@ -21,26 +21,32 @@ export interface BuildOptions {
   shadow: boolean
 }
 
+const ESCAPE_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;'
+}
+
 export function buildSvg(opts: BuildOptions): string {
-  const { width: w, height: h } = opts
-  const defs: string[] = []
+  const { width, height, background, foreground, radius, gradient, shadow, text } = opts
+  const defs: string[] = [
+    `<mask id="roundedMask"><rect width="${width}" height="${height}" rx="${radius}" ry="${radius}" fill="white"/></mask>`
+  ]
   const overlays: string[] = []
 
-  defs.push(
-    `<mask id="roundedMask"><rect width="${w}" height="${h}" rx="${opts.radius}" ry="${opts.radius}" fill="white"/></mask>`
-  )
-
-  if (opts.gradient) {
-    const lighter = getLighterShade(opts.background, 0.25)
+  if (gradient) {
+    const lighter = getLighterShade(background)
     defs.push(
       `<linearGradient id="mainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#${opts.background}"/>
+        <stop offset="0%" stop-color="#${background}"/>
         <stop offset="100%" stop-color="#${lighter}"/>
       </linearGradient>`
     )
   }
 
-  if (opts.shadow) {
+  if (shadow) {
     defs.push(
       `<filter id="softShadow">
         <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
@@ -52,31 +58,29 @@ export function buildSvg(opts: BuildOptions): string {
     )
   }
 
-  const overlayHex = opts.patternColor === 'auto'
-    ? getPatternColor(opts.background)
-    : opts.patternColor
+  const colorHex = opts.patternColor === 'auto' ? getPatternColor(background) : opts.patternColor
+  const patternDef = createPatternDef(opts.pattern, opts.patternScale, colorHex, opts.patternOpacity, opts.patternAngle)
 
-  const patternDef = createPatternDef(opts.pattern, opts.patternScale, overlayHex, opts.patternOpacity, opts.patternAngle)
   if (patternDef) {
     defs.push(patternDef.def)
     overlays.push(patternDef.element)
   }
 
-  const fill = opts.gradient ? 'url(#mainGrad)' : `#${opts.background}`
-  const textColor = opts.foreground ? `#${opts.foreground}` : getContrastColor(opts.background)
+  const fill = gradient ? 'url(#mainGrad)' : `#${background}`
+  const textColor = foreground ? `#${foreground}` : getContrastColor(background)
 
-  const textNode = opts.text
+  const textNode = text
     ? `<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle"
         font-family="${escapeAttr(opts.fontFamily)}" font-weight="${escapeAttr(opts.fontWeight)}"
-        font-size="${opts.fontSize}" fill="${textColor}"${opts.shadow ? ' filter="url(#softShadow)"' : ''
-    }>${escapeText(opts.text)}</text>`
+        font-size="${opts.fontSize}" fill="${textColor}"${shadow ? ' filter="url(#softShadow)"' : ''
+    }>${escapeText(text)}</text>`
     : ''
 
-  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img">
-  <title>${escapeText(opts.text ?? `${w}x${h}`)}</title>
+  return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>${escapeText(text ?? `${width}x${height}`)}</title>
   <defs>${defs.join('\n')}</defs>
   <g mask="url(#roundedMask)">
-    <rect width="${w}" height="${h}" fill="${fill}"/>
+    <rect width="${width}" height="${height}" fill="${fill}"/>
     ${overlays.join('\n')}
   </g>
   ${textNode}
@@ -95,10 +99,10 @@ function createPatternDef(type: Pattern, scale: number, colorHex: string, opacit
       }
     }
     case 'stripes': {
-      const w = Math.max(1, scale / 2)
+      const stripeWidth = Math.max(1, scale / 2)
       return {
         def: `<pattern id="stripes" width="${scale}" height="${scale}" patternUnits="userSpaceOnUse" patternTransform="rotate(${angle})">
-          <rect width="${w}" height="${scale}" fill="#${colorHex}" opacity="${opacity}"/></pattern>`,
+          <rect width="${stripeWidth}" height="${scale}" fill="#${colorHex}" opacity="${opacity}"/></pattern>`,
         element: `<rect width="100%" height="100%" fill="url(#stripes)"/>`
       }
     }
@@ -135,16 +139,7 @@ function createPatternDef(type: Pattern, scale: number, colorHex: string, opacit
 }
 
 function escapeText(s: string): string {
-  return s.replace(/[&<>"']/g, (ch) => {
-    switch (ch) {
-      case '&': return '&amp;'
-      case '<': return '&lt;'
-      case '>': return '&gt;'
-      case '"': return '&quot;'
-      case "'": return '&#39;'
-      default: return ch
-    }
-  })
+  return s.replace(/[&<>"']/g, (ch) => ESCAPE_MAP[ch] || ch)
 }
 
 function escapeAttr(s: string): string {
