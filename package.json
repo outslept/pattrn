@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
-    "start": "tsx server.ts",
-    "build": "tsc",
+    "build": "tsdown",
+    "dev": "tsx watch server.ts",
+    "start": "node dist/server.js",
     "preview": "node dist/server.js",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
@@ -21,7 +21,9 @@
     "@types/node": "^26.2.0",
     "oxfmt": "^0.63.0",
     "oxlint": "^1.78.0",
-    "typescript": "^7.0.2"
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "unrun": "^0.3.1"
   },
   "packageManager": "pnpm@11.21.0"
 }

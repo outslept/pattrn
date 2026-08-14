@@ -1,4 +1,4 @@
-import { Hono } from 'hono'
+import { Context, Hono } from 'hono'
 import { buildSvg, type Pattern } from './svg.js'
 import { normalizeHex } from './color.js'
 
@@ -9,7 +9,7 @@ const VALID_PATTERNS = new Set<string>(['none', 'dots', 'stripes', 'grid', 'chec
 app.get('/', (c) => c.text('Service ready. Try /img/300x200'))
 app.get('/img/:size/:bg?/:fg?', handle)
 
-async function handle(c) {
+async function handle(c: Context) {
   try {
     const { size = '', bg: bgRaw, fg: fgRaw } = c.req.param()
 
